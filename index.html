@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小学数学练习题生成器</title>
+    <style>
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+        .no-print {
+          display: none;
+        }
+        .container {
+          width: 100%;
+          margin: 0;
+          padding: 5mm;
+        }
+        .problem-grid {
+          width: 100%;
+        }
+      }
+
+      @media screen {
+        body {
+          font-family: "Microsoft YaHei", Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          background-color: #f5f5f5;
+        }
+        .container {
+          max-width: 210mm;
+          margin: 0 auto;
+          background-color: white;
+          padding: 20px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+          border-radius: 5px;
+        }
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .generate-btn {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .generate-btn:hover {
+        background-color: #45a049;
+      }
+
+      .problem-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 7px;
+        margin-top: 20px;
+      }
+
+      .problem-item {
+        padding: 5px;
+        text-align: left;
+        font-size: 16px;
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+      }
+
+      .print-btn {
+        background-color: #2196f3;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+      }
+
+      .print-btn:hover {
+        background-color: #0b7dda;
+      }
+
+      .footer {
+        margin-top: 20px;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header no-print">
+        <div class="title">小学数学练习题</div>
+        <div>
+          <button class="generate-btn" onclick="generateProblems()">
+            生成题目
+          </button>
+          <button class="print-btn" onclick="window.print()">打印</button>
+        </div>
+      </div>
+
+      <div id="problemContainer" class="problem-grid">
+        <!-- 题目将在这里生成 -->
+      </div>
+
+      <div class="footer no-print">
+        <p>点击"生成题目"按钮创建新的练习题，点击"打印"按钮打印练习题</p>
+      </div>
+    </div>
+
+    <script>
+      function generateProblems() {
+        const container = document.getElementById("problemContainer");
+        container.innerHTML = "";
+
+        // 生成100道题目 (5列 × 20行)
+        for (let i = 0; i < 100; i++) {
+          const problemItem = document.createElement("div");
+          problemItem.className = "problem-item";
+
+          // 随机决定是乘法还是除法
+          const isMultiplication = Math.random() < 0.5;
+
+          if (isMultiplication) {
+            // 生成乘法题目 (2-9的乘法表，避免与1相关的题目)
+            const num1 = Math.floor(Math.random() * 8) + 2; // 生成2-9的数字
+            const num2 = Math.floor(Math.random() * 8) + 2; // 生成2-9的数字
+            problemItem.textContent = `${num1} × ${num2} = `;
+          } else {
+            // 生成除法题目 (确保结果是整数，且不包含1)
+            const result = Math.floor(Math.random() * 8) + 2; // 结果为2-9
+            const divisor = Math.floor(Math.random() * 8) + 2; // 除数为2-9
+            const dividend = result * divisor;
+            problemItem.textContent = `${dividend} ÷ ${divisor} = `;
+          }
+
+          container.appendChild(problemItem);
+        }
+      }
+
+      // 页面加载时自动生成一组题目
+      window.onload = function () {
+        generateProblems();
+      };
+    </script>
+  </body>
+</html>
