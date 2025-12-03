@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>小学数学练习题生成器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
       @media print {
         body {
@@ -102,6 +103,22 @@
         background-color: #0b7dda;
       }
 
+      .pdf-btn {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin-left: 10px;
+      }
+
+      .pdf-btn:hover {
+        background-color: #d32f2f;
+      }
+
       .footer {
         margin-top: 20px;
         text-align: center;
@@ -111,7 +128,7 @@
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container" id="contentToExport">
       <div class="header no-print">
         <div class="title">小学数学练习题</div>
         <div>
@@ -119,6 +136,7 @@
             生成题目
           </button>
           <button class="print-btn" onclick="window.print()">打印</button>
+          <button class="pdf-btn" onclick="exportToPDF()">导出为PDF</button>
         </div>
       </div>
 
@@ -127,7 +145,9 @@
       </div>
 
       <div class="footer no-print">
-        <p>点击"生成题目"按钮创建新的练习题，点击"打印"按钮打印练习题</p>
+        <p>
+          点击"生成题目"按钮创建新的练习题，点击"打印"按钮打印练习题，点击"导出为PDF"按钮保存为PDF文件
+        </p>
       </div>
     </div>
 
@@ -159,6 +179,49 @@
 
           container.appendChild(problemItem);
         }
+      }
+
+      function exportToPDF() {
+        // 获取当前日期
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1)
+          .toString()
+          .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
+
+        // 配置PDF选项
+        const opt = {
+          margin: 10,
+          filename: `数学练习题_${dateStr}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+        };
+
+        // 创建一个临时容器，只包含需要导出的内容
+        const tempContainer = document.createElement("div");
+
+        // 克隆主容器
+        const clonedContainer = document
+          .getElementById("contentToExport")
+          .cloneNode(true);
+
+        // 移除不需要打印的元素
+        const noPrintElements = clonedContainer.querySelectorAll(".no-print");
+        noPrintElements.forEach((el) => el.remove());
+
+        // 添加标题
+        const title = document.createElement("h2");
+        title.textContent = "小学数学练习题";
+        title.style.textAlign = "center";
+        title.style.marginBottom = "20px";
+
+        tempContainer.appendChild(title);
+        tempContainer.appendChild(
+          clonedContainer.querySelector(".problem-grid")
+        );
+
+        // 生成并下载PDF
+        html2pdf().set(opt).from(tempContainer).save();
       }
 
       // 页面加载时自动生成一组题目
