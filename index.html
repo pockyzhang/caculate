@@ -351,6 +351,7 @@
     // 生成加减混合题目（两个运算符，结果0-100，不出现数字1）
     function generateAddSubMix() {
       let num1, num2, num3, result;
+      let expression = '';
 
       do {
         const isAddFirst = Math.random() < 0.5;
@@ -364,6 +365,7 @@
           // 第二个是减法，确保差≥0且最终结果≥0
           num3 = Math.floor(Math.random() * (sum - 1)) + 1; // 1-(sum-1)
           result = sum - num3;
+          expression = `${num1} + ${num2} - ${num3} = `;
         } else {
           // 第一个是减法，确保差≥0（第一步不能为负数）
           num1 = Math.floor(Math.random() * 98) + 2; // 2-99，避免数字1
@@ -373,6 +375,7 @@
           // 第二个是加法，确保最终结果≤100
           num3 = Math.floor(Math.random() * (100 - diff)) + 1; // 1-(100-diff)
           result = diff + num3;
+          expression = `${num1} - ${num2} + ${num3} = `;
         }
       } while (
         result < 0 ||
@@ -382,15 +385,7 @@
         num3 === 1
       );
 
-      // 再次检查以确保符合所有条件
-      if ((num1 + num2 - num3 >= 0 && num1 + num2 - num3 <= 100) &&
-        (num1 - num2 + num3 >= 0 && num1 - num2 + num3 <= 100)) {
-        return Math.random() < 0.5
-          ? `${num1} + ${num2} - ${num3} = `
-          : `${num1} - ${num2} + ${num3} = `;
-      } else {
-        return generateAddSubMix(); // 递归重新生成
-      }
+      return expression;
     }
 
     // 生成乘法题目（九九乘法表，不含1）
