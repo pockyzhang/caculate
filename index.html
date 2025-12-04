@@ -261,6 +261,16 @@
       }
     }
 
+    // 构建全局的九九乘法表（不含与1相关的题目）
+    const multiplicationTable = [];
+    for (let i = 2; i <= 9; i++) {
+      for (let j = 2; j <= 9; j++) {
+        if (i * j <= 100) {
+          multiplicationTable.push({ a: i, b: j, result: i * j });
+        }
+      }
+    }
+
     // 生成题目主函数
     function generateProblems() {
       const container = document.getElementById("problemContainer");
@@ -390,20 +400,10 @@
 
     // 生成乘法题目（九九乘法表，不含1）
     function generateMultiplication() {
-      // 构建九九乘法表（不含与1相关的题目）
-      const multiplicationTable = [];
-      for (let i = 2; i <= 9; i++) {
-        for (let j = 2; j <= 9; j++) {
-          if (i * j <= 100) {
-            multiplicationTable.push({ num1: i, num2: j, result: i * j });
-          }
-        }
-      }
-
       // 随机选择一个题目
       const randomIndex = Math.floor(Math.random() * multiplicationTable.length);
       const problem = multiplicationTable[randomIndex];
-      return `${problem.num1} × ${problem.num2} = `;
+      return `${problem.a} × ${problem.b} = `;
     }
 
     // 生成除法题目（九九乘法表，不含1，不出现数字0）
