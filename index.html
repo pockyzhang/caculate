@@ -1,233 +1,907 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>小学数学练习题生成器</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-      @media print {
-        body {
-          margin: 0;
-          padding: 0;
-        }
-        .no-print {
-          display: none;
-        }
-        .container {
-          width: 100%;
-          margin: 0;
-          padding: 5mm;
-        }
-        .problem-grid {
-          width: 100%;
-        }
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小学数学练习题生成器</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
       }
 
-      @media screen {
-        body {
-          font-family: "Microsoft YaHei", Arial, sans-serif;
-          margin: 0;
-          padding: 20px;
-          background-color: #f5f5f5;
-        }
-        .container {
-          max-width: 210mm;
-          margin: 0 auto;
-          background-color: white;
-          padding: 20px;
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-          border-radius: 5px;
-        }
+      .no-print {
+        display: none;
       }
 
-      .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-      }
-
-      .title {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-      }
-
-      .generate-btn {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-
-      .generate-btn:hover {
-        background-color: #45a049;
+      .container {
+        width: 100%;
+        margin: 0;
+        padding: 5mm;
       }
 
       .problem-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 7px;
-        margin-top: 20px;
+        width: 100%;
+      }
+    }
+
+    @media screen {
+      body {
+        font-family: "Microsoft YaHei", Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
       }
 
-      .problem-item {
-        padding: 5px;
-        text-align: left;
-        font-size: 16px;
-        min-height: 30px;
-        display: flex;
-        align-items: center;
+      .container {
+        max-width: 210mm;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 5px;
       }
+    }
 
-      .print-btn {
-        background-color: #2196f3;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        margin-left: 10px;
-      }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
 
-      .print-btn:hover {
-        background-color: #0b7dda;
-      }
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
 
-      .pdf-btn {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        margin-left: 10px;
-      }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-      .pdf-btn:hover {
-        background-color: #d32f2f;
-      }
+    /* Dropdown样式 */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 200px;
+    }
 
-      .footer {
-        margin-top: 20px;
-        text-align: center;
-        color: #666;
-        font-size: 14px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container" id="contentToExport">
-      <div class="header no-print">
-        <div class="title">小学数学练习题</div>
-        <div>
-          <button class="generate-btn" onclick="generateProblems()">
-            生成题目
-          </button>
+    .dropdown-button {
+      background-color: #6c757d;
+      color: white;
+      padding: 8px 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dropdown-button:hover {
+      background-color: #5a6268;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #fff;
+      min-width: 200px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .dropdown-content label {
+      display: block;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+
+    .dropdown-content label:hover {
+      background-color: #f8f9fa;
+    }
+
+    .dropdown-content input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 5px;
+    }
+
+    .action-btn {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+
+    .action-btn:hover {
+      background-color: #45a049;
+    }
+
+    .print-btn {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+
+    .print-btn:hover {
+      background-color: #0b7dda;
+    }
+
+    .pdf-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      white-space: nowrap;
+    }
+
+    .pdf-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 20px;
+    }
+
+    .problem-item {
+      padding: 5px;
+      text-align: left;
+      font-size: 16px;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+    }
+
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container" id="contentToExport">
+    <div class="header no-print">
+      <div class="title">小学数学练习题</div>
+      <div class="controls">
+        <div class="dropdown" id="typeDropdown">
+          <button class="dropdown-button" onclick="toggleDropdown()">选择题目类型...</button>
+          <div class="dropdown-content" id="dropdownContent">
+            <label><input type="checkbox" id="addition" checked> 加法运算</label>
+            <label><input type="checkbox" id="subtraction" checked> 减法运算</label>
+            <label><input type="checkbox" id="addSubMix" checked> 加减混合运算</label>
+            <label><input type="checkbox" id="multiplication" checked> 乘法运算</label>
+            <label><input type="checkbox" id="division" checked> 除法运算</label>
+            <label><input type="checkbox" id="mixedOperations" checked> 四则混合运算</label>
+            <label><input type="checkbox" id="parenthesesOperations" checked> 带小括号的四则混合运算</label>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="action-btn" onclick="generateProblems()">生成题目</button>
           <button class="print-btn" onclick="window.print()">打印</button>
           <button class="pdf-btn" onclick="exportToPDF()">导出为PDF</button>
         </div>
       </div>
-
-      <div id="problemContainer" class="problem-grid">
-        <!-- 题目将在这里生成 -->
-      </div>
-
-      <div class="footer no-print">
-        <p>
-          点击"生成题目"按钮创建新的练习题，点击"打印"按钮打印练习题，点击"导出为PDF"按钮保存为PDF文件
-        </p>
-      </div>
     </div>
 
-    <script>
-      function generateProblems() {
-        const container = document.getElementById("problemContainer");
-        container.innerHTML = "";
+    <div id="problemContainer" class="problem-grid">
+      <!-- 题目将在这里生成 -->
+    </div>
 
-        // 生成100道题目 (5列 × 20行)
-        for (let i = 0; i < 100; i++) {
-          const problemItem = document.createElement("div");
-          problemItem.className = "problem-item";
+    <div class="footer no-print">
+      <p>
+        点击"生成题目"按钮创建新的练习题，点击"打印"按钮打印练习题，点击"导出为PDF"按钮保存为PDF文件
+      </p>
+    </div>
+  </div>
 
-          // 随机决定是乘法还是除法
-          const isMultiplication = Math.random() < 0.5;
+  <script>
+    // 下拉菜单控制
+    function toggleDropdown() {
+      document.getElementById("dropdownContent").classList.toggle("show");
+    }
 
-          if (isMultiplication) {
-            // 生成乘法题目 (2-9的乘法表，避免与1相关的题目)
-            const num1 = Math.floor(Math.random() * 8) + 2; // 生成2-9的数字
-            const num2 = Math.floor(Math.random() * 8) + 2; // 生成2-9的数字
-            problemItem.textContent = `${num1} × ${num2} = `;
-          } else {
-            // 生成除法题目 (确保结果是整数，且不包含1)
-            const result = Math.floor(Math.random() * 8) + 2; // 结果为2-9
-            const divisor = Math.floor(Math.random() * 8) + 2; // 除数为2-9
-            const dividend = result * divisor;
-            problemItem.textContent = `${dividend} ÷ ${divisor} = `;
+    // 点击其他地方关闭下拉菜单
+    window.onclick = function (event) {
+      if (!event.target.matches('.dropdown-button') && !event.target.closest('.dropdown-content')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) {
+          var openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
           }
+        }
+      }
+    }
 
-          container.appendChild(problemItem);
+    // 生成题目主函数
+    function generateProblems() {
+      const container = document.getElementById("problemContainer");
+      container.innerHTML = "";
+
+      // 获取选中的题目类型
+      const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]:checked');
+      if (checkboxes.length === 0) {
+        alert("请至少选择一种题目类型！");
+        return;
+      }
+
+      const selectedTypes = Array.from(checkboxes).map(cb => cb.id);
+
+      // 生成100道题目 (5列 × 20行)
+      for (let i = 0; i < 100; i++) {
+        const problemItem = document.createElement("div");
+        problemItem.className = "problem-item";
+
+        // 随机选择一种选中的题目类型
+        const randomType = selectedTypes[Math.floor(Math.random() * selectedTypes.length)];
+
+        // 根据题目类型生成相应题目
+        switch (randomType) {
+          case "addition":
+            problemItem.textContent = generateAddition();
+            break;
+          case "subtraction":
+            problemItem.textContent = generateSubtraction();
+            break;
+          case "addSubMix":
+            problemItem.textContent = generateAddSubMix();
+            break;
+          case "multiplication":
+            problemItem.textContent = generateMultiplication();
+            break;
+          case "division":
+            problemItem.textContent = generateDivision();
+            break;
+          case "mixedOperations":
+            problemItem.textContent = generateMixedOperations();
+            break;
+          case "parenthesesOperations":
+            problemItem.textContent = generateParenthesesOperations();
+            break;
+          default:
+            // 默认生成乘法或除法
+            const isMultiplication = Math.random() < 0.5;
+            if (isMultiplication) {
+              problemItem.textContent = generateMultiplication();
+            } else {
+              problemItem.textContent = generateDivision();
+            }
+        }
+
+        container.appendChild(problemItem);
+      }
+    }
+
+    // 生成加法题目（和要在100以内，不出现数字1）
+    function generateAddition() {
+      let num1, num2;
+      do {
+        num1 = Math.floor(Math.random() * 99) + 2; // 2-99，避免数字1
+        num2 = Math.floor(Math.random() * (100 - num1)) + 1; // 1-(100-num1)
+      } while (num1 + num2 > 100 || num1 === 1 || num2 === 1); // 确保和不超过100且不包含1
+
+      return `${num1} + ${num2} = `;
+    }
+
+    // 生成减法题目（被减数小于100且差不能小于0，不出现数字1）
+    function generateSubtraction() {
+      let num1, num2;
+      do {
+        num1 = Math.floor(Math.random() * 98) + 2; // 2-99，避免数字1
+        num2 = Math.floor(Math.random() * (num1 - 1)) + 1; // 1-(num1-1)，确保差≥1
+      } while (num1 === 1 || num2 === 1 || num1 - num2 < 0); // 确保不包含1且差非负
+
+      return `${num1} - ${num2} = `;
+    }
+
+    // 生成加减混合题目（两个运算符，结果0-100，不出现数字1）
+    function generateAddSubMix() {
+      let num1, num2, num3, result;
+
+      do {
+        const isAddFirst = Math.random() < 0.5;
+
+        if (isAddFirst) {
+          // 第一个是加法，确保和不超过100
+          num1 = Math.floor(Math.random() * 49) + 2; // 2-50，避免数字1
+          num2 = Math.floor(Math.random() * (99 - num1)) + 1; // 1-(99-num1)
+          const sum = num1 + num2;
+
+          // 第二个是减法，确保差≥0且最终结果≥0
+          num3 = Math.floor(Math.random() * (sum - 1)) + 1; // 1-(sum-1)
+          result = sum - num3;
+        } else {
+          // 第一个是减法，确保差≥1
+          num1 = Math.floor(Math.random() * 49) + 51; // 51-99，避免数字1
+          num2 = Math.floor(Math.random() * (num1 - 2)) + 2; // 2-(num1-2)
+          const diff = num1 - num2;
+
+          // 第二个是加法，确保最终结果≤100
+          num3 = Math.floor(Math.random() * (100 - diff - 1)) + 1; // 1-(100-diff-1)
+          result = diff + num3;
+        }
+      } while (
+        result < 0 ||
+        result > 100 ||
+        num1 === 1 ||
+        num2 === 1 ||
+        num3 === 1 ||
+        (num1 + num2 > 100) // 确保加法不超过100
+      );
+
+      // 再次检查以确保符合所有条件
+      if ((num1 + num2 - num3 >= 0 && num1 + num2 - num3 <= 100) &&
+        (num1 - num2 + num3 >= 0 && num1 - num2 + num3 <= 100)) {
+        return Math.random() < 0.5
+          ? `${num1} + ${num2} - ${num3} = `
+          : `${num1} - ${num2} + ${num3} = `;
+      } else {
+        return generateAddSubMix(); // 递归重新生成
+      }
+    }
+
+    // 生成乘法题目（九九乘法表，不含1）
+    function generateMultiplication() {
+      // 构建九九乘法表（不含与1相关的题目）
+      const multiplicationTable = [];
+      for (let i = 2; i <= 9; i++) {
+        for (let j = 2; j <= 9; j++) {
+          if (i * j <= 100) {
+            multiplicationTable.push({ num1: i, num2: j, result: i * j });
+          }
         }
       }
 
-      function exportToPDF() {
-        // 获取当前日期
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}${(today.getMonth() + 1)
-          .toString()
-          .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
+      // 随机选择一个题目
+      const randomIndex = Math.floor(Math.random() * multiplicationTable.length);
+      const problem = multiplicationTable[randomIndex];
+      return `${problem.num1} × ${problem.num2} = `;
+    }
 
-        // 配置PDF选项
-        const opt = {
-          margin: 10,
-          filename: `数学练习题_${dateStr}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
-
-        // 创建一个临时容器，只包含需要导出的内容
-        const tempContainer = document.createElement("div");
-
-        // 克隆主容器
-        const clonedContainer = document
-          .getElementById("contentToExport")
-          .cloneNode(true);
-
-        // 移除不需要打印的元素
-        const noPrintElements = clonedContainer.querySelectorAll(".no-print");
-        noPrintElements.forEach((el) => el.remove());
-
-        // 添加标题
-        const title = document.createElement("h2");
-        title.textContent = "小学数学练习题";
-        title.style.textAlign = "center";
-        title.style.marginBottom = "20px";
-
-        tempContainer.appendChild(title);
-        tempContainer.appendChild(
-          clonedContainer.querySelector(".problem-grid")
-        );
-
-        // 生成并下载PDF
-        html2pdf().set(opt).from(tempContainer).save();
+    // 生成除法题目（九九乘法表，不含1，不出现数字0）
+    function generateDivision() {
+      // 构建九九乘法表对应的除法题目（不含与1相关的题目）
+      const divisionTable = [];
+      for (let i = 2; i <= 9; i++) {
+        for (let j = 2; j <= 9; j++) {
+          const dividend = i * j;
+          if (dividend <= 100) {
+            // 添加两种形式的除法题目
+            divisionTable.push({ dividend: dividend, divisor: i, quotient: j });
+            divisionTable.push({ dividend: dividend, divisor: j, quotient: i });
+          }
+        }
       }
 
-      // 页面加载时自动生成一组题目
-      window.onload = function () {
-        generateProblems();
+      // 随机选择一个题目
+      const randomIndex = Math.floor(Math.random() * divisionTable.length);
+      const problem = divisionTable[randomIndex];
+      return `${problem.dividend} ÷ ${problem.divisor} = `;
+    }
+
+    // 生成混合运算题目（加减乘除搭配，结果0-100，不出现数字1，除法不出现数字0）
+    // 所有乘法和除法都来自九九乘法表，每一步运算都必须遵守基本规则
+    function generateMixedOperations() {
+      // 构建九九乘法表（不含与1相关的题目）
+      const multiplicationTable = [];
+      for (let i = 2; i <= 9; i++) {
+        for (let j = 2; j <= 9; j++) {
+          if (i * j <= 100) {
+            multiplicationTable.push({ num1: i, num2: j, result: i * j });
+          }
+        }
+      }
+
+      let expression = '';
+      let attempts = 0;
+      const maxAttempts = 100; // 防止无限循环
+
+      do {
+        attempts++;
+
+        // 随机选择运算符顺序
+        const operationOrder = Math.random() < 0.5 ? 'ASMD' : 'MDAS'; // ASMD=加减乘除, MDAS=乘除加减
+
+        if (operationOrder === 'ASMD') {
+          // 加减法优先
+          const isAddFirst = Math.random() < 0.5;
+
+          if (isAddFirst) {
+            // 加法: num1 + num2 = intermediate (结果必须在0-100之间，不包含1)
+            const num1 = Math.floor(Math.random() * 49) + 2; // 2-50
+            const num2 = Math.floor(Math.random() * (99 - num1)) + 1; // 1-(99-num1)
+            const intermediate = num1 + num2;
+
+            // 确保中间结果符合规则
+            if (intermediate > 100 || intermediate === 1) continue;
+
+            // 乘除法（从九九乘法表中选择）
+            const multPair = multiplicationTable[Math.floor(Math.random() * multiplicationTable.length)];
+            const isMultiply = Math.random() < 0.5;
+
+            if (isMultiply) {
+              // 乘法: intermediate × factor (必须来自九九乘法表，结果在0-100之间)
+              const factor = Math.floor(Math.random() * 8) + 2; // 2-9
+              const result = intermediate * factor;
+
+              if (result <= 100 && result !== 1) {
+                expression = `${num1} + ${num2} × ${factor} = `;
+                return expression;
+              }
+            } else {
+              // 除法: dividend ÷ divisor = intermediate (必须来自九九乘法表)
+              // 从九九乘法表中找一个结果作为dividend，使得dividend/factor=intermediate
+              const multPairDiv = multiplicationTable[Math.floor(Math.random() * multiplicationTable.length)];
+              const dividend = multPairDiv.result;
+              const divisor = Math.random() < 0.5 ? multPairDiv.num1 : multPairDiv.num2;
+              const quotient = dividend / divisor;
+
+              if (quotient === intermediate && quotient <= 100 && quotient !== 1) {
+                expression = `${num1} + ${num2} ÷ ${divisor} = `;
+                return expression;
+              }
+            }
+          } else {
+            // 减法: num1 - num2 = intermediate (结果必须在0-100之间，不为负数，不包含1)
+            const num1 = Math.floor(Math.random() * 49) + 51; // 51-99
+            const num2 = Math.floor(Math.random() * (num1 - 2)) + 2; // 2-(num1-2)
+            const intermediate = num1 - num2;
+
+            // 确保中间结果符合规则
+            if (intermediate < 0 || intermediate > 100 || intermediate === 1) continue;
+
+            // 乘除法（从九九乘法表中选择）
+            const isMultiply = Math.random() < 0.5;
+
+            if (isMultiply) {
+              // 乘法: intermediate × factor (必须来自九九乘法表，结果在0-100之间)
+              const factor = Math.floor(Math.random() * Math.min(9, Math.floor(100 / intermediate))) + 2; // 2-9
+              const result = intermediate * factor;
+
+              if (result <= 100 && result !== 1) {
+                expression = `${num1} - ${num2} × ${factor} = `;
+                return expression;
+              }
+            } else {
+              // 除法: dividend ÷ divisor = intermediate (必须来自九九乘法表)
+              // 从九九乘法表中找一个结果作为dividend，使得dividend/factor=intermediate
+              const multPairDiv = multiplicationTable[Math.floor(Math.random() * multiplicationTable.length)];
+              const dividend = multPairDiv.result;
+              const divisor = Math.random() < 0.5 ? multPairDiv.num1 : multPairDiv.num2;
+              const quotient = dividend / divisor;
+
+              if (quotient === intermediate && quotient <= 100 && quotient !== 1) {
+                expression = `${num1} - ${num2} ÷ ${divisor} = `;
+                return expression;
+              }
+            }
+          }
+        } else {
+          // 乘除法优先（全部来自九九乘法表）
+          const multPair1 = multiplicationTable[Math.floor(Math.random() * multiplicationTable.length)];
+          const num1 = multPair1.num1;
+          const num2 = multPair1.num2;
+          const intermediate = num1 * num2;
+
+          // 确保中间结果符合规则
+          if (intermediate > 100 || intermediate === 1) continue;
+
+          const isAddSecond = Math.random() < 0.5;
+
+          if (isAddSecond) {
+            // 加法: intermediate + num3 = result (结果在0-100之间，不包含1)
+            const num3 = Math.floor(Math.random() * (100 - intermediate)) + 1; // 1-(100-intermediate)
+            const result = intermediate + num3;
+
+            if (result <= 100 && result !== 1) {
+              expression = `${num1} × ${num2} + ${num3} = `;
+              return expression;
+            }
+          } else {
+            // 减法: intermediate - num3 = result (结果在0-100之间，不为负数，不包含1)
+            const num3 = Math.floor(Math.random() * Math.min(intermediate - 1, 99)) + 1; // 1-min(intermediate-1, 99)
+            const result = intermediate - num3;
+
+            if (result >= 0 && result <= 100 && result !== 1) {
+              expression = `${num1} × ${num2} - ${num3} = `;
+              return expression;
+            }
+          }
+        }
+      } while (attempts < maxAttempts);
+
+      // 如果超过最大尝试次数仍未找到合适的组合，则递归调用
+      return generateMixedOperations(); // 递归重新生成
+    }
+
+    // 生成混合运算题目（加减乘除搭配，结果0-100）
+    // 严格按照数学运算优先级：先算乘除，再算加减
+    function generateMixedOperations() {
+      let expression = '';
+      let result = 0;
+      let attempts = 0;
+      const maxAttempts = 100; // 防止无限循环
+
+      do {
+        attempts++;
+
+        // 随机选择运算符顺序模式
+        const pattern = Math.floor(Math.random() * 4); // 0-3种模式
+
+        switch (pattern) {
+          case 0: // a + b × c 或 a + b ÷ c
+            {
+              // 先生成乘除法部分，确保其结果在合理范围内
+              const isMultiply = Math.random() < 0.5;
+              let multResult, num2, num3;
+
+              if (isMultiply) {
+                // 乘法：使用九九乘法表（不含1）
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num3 = Math.floor(Math.random() * 8) + 2; // 2-9
+                multResult = num2 * num3;
+              } else {
+                // 除法：确保能整除
+                const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+                num3 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = quotient * num3;
+                multResult = quotient;
+              }
+
+              // 确保乘除法结果在合理范围内
+              if (multResult > 100 || multResult < 2) continue;
+
+              // 生成加法的第一个数，确保最终结果在0-100之间
+              const num1 = Math.floor(Math.random() * (100 - multResult + 1)); // 0-(100-multResult)
+              result = num1 + multResult;
+
+              if (result >= 0 && result <= 100) {
+                expression = isMultiply
+                  ? `${num1} + ${num2} × ${num3} = `
+                  : `${num1} + ${num2} ÷ ${num3} = `;
+                return expression;
+              }
+            }
+            break;
+
+          case 1: // a - b × c 或 a - b ÷ c
+            {
+              // 先生成乘除法部分
+              const isMultiply = Math.random() < 0.5;
+              let multResult, num2, num3;
+
+              if (isMultiply) {
+                // 乘法：使用九九乘法表（不含1）
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num3 = Math.floor(Math.random() * 8) + 2; // 2-9
+                multResult = num2 * num3;
+              } else {
+                // 除法：确保能整除
+                const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+                num3 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = quotient * num3;
+                multResult = quotient;
+              }
+
+              // 确保乘除法结果在合理范围内
+              if (multResult > 100 || multResult < 2) continue;
+
+              // 生成减法的第一个数，确保最终结果在0-100之间且不为负数
+              const num1 = Math.floor(Math.random() * (100 - multResult + 1)) + multResult; // multResult-100
+              result = num1 - multResult;
+
+              if (result >= 0 && result <= 100) {
+                expression = isMultiply
+                  ? `${num1} - ${num2} × ${num3} = `
+                  : `${num1} - ${num2} ÷ ${num3} = `;
+                return expression;
+              }
+            }
+            break;
+
+          case 2: // a × b + c 或 a ÷ b + c
+            {
+              // 先生成乘除法部分
+              const isFirstMultiply = Math.random() < 0.5;
+              let firstResult, num1, num2;
+
+              if (isFirstMultiply) {
+                // 乘法：使用九九乘法表（不含1）
+                num1 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                firstResult = num1 * num2;
+              } else {
+                // 除法：确保能整除
+                const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num1 = quotient * num2;
+                firstResult = quotient;
+              }
+
+              // 确保第一步结果在合理范围内
+              if (firstResult > 100 || firstResult < 2) continue;
+
+              // 生成加法的第三个数，确保最终结果在0-100之间
+              const num3 = Math.floor(Math.random() * (100 - firstResult + 1)); // 0-(100-firstResult)
+              result = firstResult + num3;
+
+              if (result >= 0 && result <= 100) {
+                expression = isFirstMultiply
+                  ? `${num1} × ${num2} + ${num3} = `
+                  : `${num1} ÷ ${num2} + ${num3} = `;
+                return expression;
+              }
+            }
+            break;
+
+          case 3: // a × b - c 或 a ÷ b - c
+            {
+              // 先生成乘除法部分
+              const isFirstMultiply = Math.random() < 0.5;
+              let firstResult, num1, num2;
+
+              if (isFirstMultiply) {
+                // 乘法：使用九九乘法表（不含1）
+                num1 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                firstResult = num1 * num2;
+              } else {
+                // 除法：确保能整除
+                const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+                num2 = Math.floor(Math.random() * 8) + 2; // 2-9
+                num1 = quotient * num2;
+                firstResult = quotient;
+              }
+
+              // 确保第一步结果在合理范围内
+              if (firstResult > 100 || firstResult < 2) continue;
+
+              // 生成减法的第三个数，确保最终结果在0-100之间且不为负数
+              const num3 = Math.floor(Math.random() * firstResult + 1); // 0-firstResult
+              result = firstResult - num3;
+
+              if (result >= 0 && result <= 100) {
+                expression = isFirstMultiply
+                  ? `${num1} × ${num2} - ${num3} = `
+                  : `${num1} ÷ ${num2} - ${num3} = `;
+                return expression;
+              }
+            }
+            break;
+        }
+      } while (attempts < maxAttempts);
+
+      // 如果超过最大尝试次数仍未找到合适的组合，则递归调用
+      return generateMixedOperations(); // 递归重新生成
+    }
+
+    // 生成带括号的四则混合运算题目（结果0-100）
+    // 严格按照数学运算优先级：先算括号内，再算括号外
+    function generateParenthesesOperations() {
+      let expression = '';
+      let result = 0;
+      let attempts = 0;
+      const maxAttempts = 100; // 防止无限循环
+
+      do {
+        attempts++;
+
+        // 随机选择括号形式
+        const pattern = Math.floor(Math.random() * 2); // 0-1种模式
+
+        if (pattern === 0) {
+          // 模式1: (a op b) op c
+          // 先生成括号内的运算
+          const isInnerMultiply = Math.random() < 0.5;
+          let innerResult, innerNum1, innerNum2;
+
+          if (isInnerMultiply) {
+            // 括号内乘法：使用九九乘法表（不含1）
+            innerNum1 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerResult = innerNum1 * innerNum2;
+          } else {
+            // 括号内除法：确保能整除
+            const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum1 = quotient * innerNum2;
+            innerResult = quotient;
+          }
+
+          // 确保括号内结果在合理范围内
+          if (innerResult > 100 || innerResult < 2) continue;
+
+          // 生成括号外的运算
+          const isOuterAdd = Math.random() < 0.5;
+          let num3;
+
+          if (isOuterAdd) {
+            // 外部加法：确保最终结果在0-100之间
+            num3 = Math.floor(Math.random() * (100 - innerResult + 1)); // 0-(100-innerResult)
+            result = innerResult + num3;
+
+            if (result >= 0 && result <= 100) {
+              expression = isInnerMultiply
+                ? `(${innerNum1} × ${innerNum2}) + ${num3} = `
+                : `(${innerNum1} ÷ ${innerNum2}) + ${num3} = `;
+              return expression;
+            }
+          } else {
+            // 外部减法：确保最终结果在0-100之间且不为负数
+            num3 = Math.floor(Math.random() * (innerResult + 1)); // 0-innerResult
+            result = innerResult - num3;
+
+            if (result >= 0 && result <= 100) {
+              expression = isInnerMultiply
+                ? `(${innerNum1} × ${innerNum2}) - ${num3} = `
+                : `(${innerNum1} ÷ ${innerNum2}) - ${num3} = `;
+              return expression;
+            }
+          }
+        } else {
+          // 模式2: a op (b op c)
+          // 先生成括号内的运算
+          const isInnerMultiply = Math.random() < 0.5;
+          let innerResult, innerNum2, innerNum3;
+
+          if (isInnerMultiply) {
+            // 括号内乘法：使用九九乘法表（不含1）
+            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerResult = innerNum2 * innerNum3;
+          } else {
+            // 括号内除法：确保能整除
+            const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
+            innerNum2 = quotient * innerNum3;
+            innerResult = quotient;
+          }
+
+          // 确保括号内结果在合理范围内
+          if (innerResult > 100 || innerResult < 2) continue;
+
+          // 生成括号前的运算
+          const isOuterAdd = Math.random() < 0.5;
+          let num1;
+
+          if (isOuterAdd) {
+            // 外部加法：确保最终结果在0-100之间
+            num1 = Math.floor(Math.random() * (100 - innerResult + 1)); // 0-(100-innerResult)
+            result = num1 + innerResult;
+
+            if (result >= 0 && result <= 100) {
+              expression = isInnerMultiply
+                ? `${num1} + (${innerNum2} × ${innerNum3}) = `
+                : `${num1} + (${innerNum2} ÷ ${innerNum3}) = `;
+              return expression;
+            }
+          } else {
+            // 外部减法：确保最终结果在0-100之间且不为负数
+            num1 = Math.floor(Math.random() * (100 - innerResult + 1)) + innerResult; // innerResult-100
+            result = num1 - innerResult;
+
+            if (result >= 0 && result <= 100) {
+              expression = isInnerMultiply
+                ? `${num1} - (${innerNum2} × ${innerNum3}) = `
+                : `${num1} - (${innerNum2} ÷ ${innerNum3}) = `;
+              return expression;
+            }
+          }
+        }
+      } while (attempts < maxAttempts);
+
+      // 如果超过最大尝试次数仍未找到合适的组合，则递归调用
+      return generateParenthesesOperations(); // 递归重新生成
+    }
+
+    function exportToPDF() {
+      // 获取当前日期
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
+
+      // 获取选中的题目类型
+      const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]:checked');
+      const selectedTypes = Array.from(checkboxes).map(cb =>
+        document.querySelector(`label[for="${cb.id}"]`).textContent
+      ).join("、");
+
+      // 配置PDF选项
+      const opt = {
+        margin: 10,
+        filename: `数学练习题_${dateStr}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
-    </script>
-  </body>
+
+      // 创建一个临时容器，只包含需要导出的内容
+      const tempContainer = document.createElement("div");
+
+      // 克隆主容器
+      const clonedContainer = document
+        .getElementById("contentToExport")
+        .cloneNode(true);
+
+      // 移除不需要打印的元素
+      const noPrintElements = clonedContainer.querySelectorAll(".no-print");
+      noPrintElements.forEach((el) => el.remove());
+
+      // 添加标题
+      const title = document.createElement("h2");
+      title.textContent = "小学数学练习题";
+      title.style.textAlign = "center";
+      title.style.marginBottom = "20px";
+
+      // 添加题目类型说明
+      const typeInfo = document.createElement("p");
+      typeInfo.textContent = `题目类型：${selectedTypes}`;
+      typeInfo.style.textAlign = "center";
+      typeInfo.style.marginBottom = "20px";
+      typeInfo.style.fontSize = "14px";
+
+      tempContainer.appendChild(title);
+      tempContainer.appendChild(typeInfo);
+      tempContainer.appendChild(
+        clonedContainer.querySelector(".problem-grid")
+      );
+
+      // 生成并下载PDF
+      html2pdf().set(opt).from(tempContainer).save();
+    }
+
+    // 页面加载时自动生成一组题目
+    window.onload = function () {
+      generateProblems();
+    };
+  </script>
+</body>
+
 </html>
