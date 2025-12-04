@@ -610,6 +610,17 @@
       }
 
       // 所有乘除法必须来自九九乘法表
+      // 构建九九乘法表（不含与1相关的题目）
+      const multiplicationTable = [];
+      for (let i = 2; i <= 9; i++) {
+        for (let j = 2; j <= 9; j++) {
+          const product = i * j;
+          if (product <= 100) {
+            multiplicationTable.push({ a: i, b: j, result: product });
+          }
+        }
+      }
+
       do {
         attempts++;
 
