@@ -365,13 +365,13 @@
           num3 = Math.floor(Math.random() * (sum - 1)) + 1; // 1-(sum-1)
           result = sum - num3;
         } else {
-          // 第一个是减法，确保差≥1
-          num1 = Math.floor(Math.random() * 49) + 51; // 51-99，避免数字1
-          num2 = Math.floor(Math.random() * (num1 - 2)) + 2; // 2-(num1-2)
+          // 第一个是减法，确保差≥0（第一步不能为负数）
+          num1 = Math.floor(Math.random() * 98) + 2; // 2-99，避免数字1
+          num2 = Math.floor(Math.random() * num1) + 1; // 1-num1，确保num1-num2≥0
           const diff = num1 - num2;
 
           // 第二个是加法，确保最终结果≤100
-          num3 = Math.floor(Math.random() * (100 - diff - 1)) + 1; // 1-(100-diff-1)
+          num3 = Math.floor(Math.random() * (100 - diff)) + 1; // 1-(100-diff)
           result = diff + num3;
         }
       } while (
@@ -379,8 +379,7 @@
         result > 100 ||
         num1 === 1 ||
         num2 === 1 ||
-        num3 === 1 ||
-        (num1 + num2 > 100) // 确保加法不超过100
+        num3 === 1
       );
 
       // 再次检查以确保符合所有条件
