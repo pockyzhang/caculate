@@ -588,14 +588,28 @@
       return generateMixedOperations(); // 递归重新生成
     }
 
-    // 生成带括号的四则混合运算题目（结果0-100）
-    // 严格按照数学运算优先级：先算括号内，再算括号外
+    // 生成带小括号的四则混合运算题目
+    // 支持两种模式：
+    // 1. (a op b) op c  括号内为加减法，括号外为乘除法
+    // 2. a op (b op c)  括号前为乘除法，括号内为加减法
     function generateParenthesesOperations() {
       let expression = '';
       let result = 0;
       let attempts = 0;
       const maxAttempts = 100; // 防止无限循环
 
+      // 构建九九乘法表（不含与1相关的题目）
+      const multiplicationTable = [];
+      for (let i = 2; i <= 9; i++) {
+        for (let j = 2; j <= 9; j++) {
+          const product = i * j;
+          if (product <= 100) {
+            multiplicationTable.push({ a: i, b: j, result: product });
+          }
+        }
+      }
+
+      // 所有乘除法必须来自九九乘法表
       do {
         attempts++;
 
