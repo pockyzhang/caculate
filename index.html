@@ -709,6 +709,7 @@
 
     // 生成带括号的加减运算题目（结果0-100）
     // 仅包含括号和加减法，每一步运算都要符合4条基本规律
+    // 括号不能在前面
     function generateParenthesesAddSub() {
       let expression = '';
       let result = 0;
@@ -718,104 +719,51 @@
       do {
         attempts++;
 
-        // 随机选择括号形式
-        const pattern = Math.floor(Math.random() * 2); // 0-1种模式
+        // 只使用模式2: a op (b op c)
+        // 先生成括号内的运算
+        const isInnerAdd = Math.random() < 0.5;
+        let innerResult, innerNum2, innerNum3;
 
-        if (pattern === 0) {
-          // 模式1: (a op b) op c
-          // 先生成括号内的运算
-          const isInnerAdd = Math.random() < 0.5;
-          let innerResult, innerNum1, innerNum2;
+        if (isInnerAdd) {
+          // 括号内加法
+          innerNum2 = Math.floor(Math.random() * 49) + 2; // 2-50
+          innerNum3 = Math.floor(Math.random() * (100 - innerNum2)) + 1; // 1-(100-innerNum2)
+          innerResult = innerNum2 + innerNum3;
+        } else {
+          // 括号内减法
+          innerNum2 = Math.floor(Math.random() * 49) + 51; // 51-99
+          innerNum3 = Math.floor(Math.random() * (innerNum2 - 2)) + 2; // 2-(innerNum2-2)
+          innerResult = innerNum2 - innerNum3;
+        }
 
-          if (isInnerAdd) {
-            // 括号内加法
-            innerNum1 = Math.floor(Math.random() * 49) + 2; // 2-50
-            innerNum2 = Math.floor(Math.random() * (100 - innerNum1)) + 1; // 1-(100-innerNum1)
-            innerResult = innerNum1 + innerNum2;
-          } else {
-            // 括号内减法
-            innerNum1 = Math.floor(Math.random() * 49) + 51; // 51-99
-            innerNum2 = Math.floor(Math.random() * (innerNum1 - 2)) + 2; // 2-(innerNum1-2)
-            innerResult = innerNum1 - innerNum2;
-          }
+        // 确保括号内结果在合理范围内且不为1
+        if (innerResult > 100 || innerResult < 0 || innerResult === 1) continue;
 
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 0 || innerResult === 1) continue;
+        // 生成括号前的运算
+        const isOuterAdd = Math.random() < 0.5;
+        let num1;
 
-          // 生成括号外的运算
-          const isOuterAdd = Math.random() < 0.5;
-          let num3;
+        if (isOuterAdd) {
+          // 外部加法：确保最终结果在0-100之间
+          num1 = Math.floor(Math.random() * (100 - innerResult + 1)); // 0-(100-innerResult)
+          result = num1 + innerResult;
 
-          if (isOuterAdd) {
-            // 外部加法：确保最终结果在0-100之间
-            num3 = Math.floor(Math.random() * (100 - innerResult + 1)); // 0-(100-innerResult)
-            result = innerResult + num3;
-
-            if (result >= 0 && result <= 100 && result !== 1) {
-              expression = isInnerAdd
-                ? `(${innerNum1} + ${innerNum2}) + ${num3} = `
-                : `(${innerNum1} - ${innerNum2}) + ${num3} = `;
-              return expression;
-            }
-          } else {
-            // 外部减法：确保最终结果在0-100之间且不为负数
-            num3 = Math.floor(Math.random() * (innerResult + 1)); // 0-innerResult
-            result = innerResult - num3;
-
-            if (result >= 0 && result <= 100 && result !== 1) {
-              expression = isInnerAdd
-                ? `(${innerNum1} + ${innerNum2}) - ${num3} = `
-                : `(${innerNum1} - ${innerNum2}) - ${num3} = `;
-              return expression;
-            }
+          if (result >= 0 && result <= 100 && result !== 1) {
+            expression = isInnerAdd
+              ? `${num1} + (${innerNum2} + ${innerNum3}) = `
+              : `${num1} + (${innerNum2} - ${innerNum3}) = `;
+            return expression;
           }
         } else {
-          // 模式2: a op (b op c)
-          // 先生成括号内的运算
-          const isInnerAdd = Math.random() < 0.5;
-          let innerResult, innerNum2, innerNum3;
+          // 外部减法：确保最终结果在0-100之间且不为负数
+          num1 = Math.floor(Math.random() * (100 - innerResult + 1)) + innerResult; // innerResult-100
+          result = num1 - innerResult;
 
-          if (isInnerAdd) {
-            // 括号内加法
-            innerNum2 = Math.floor(Math.random() * 49) + 2; // 2-50
-            innerNum3 = Math.floor(Math.random() * (100 - innerNum2)) + 1; // 1-(100-innerNum2)
-            innerResult = innerNum2 + innerNum3;
-          } else {
-            // 括号内减法
-            innerNum2 = Math.floor(Math.random() * 49) + 51; // 51-99
-            innerNum3 = Math.floor(Math.random() * (innerNum2 - 2)) + 2; // 2-(innerNum2-2)
-            innerResult = innerNum2 - innerNum3;
-          }
-
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 0 || innerResult === 1) continue;
-
-          // 生成括号前的运算
-          const isOuterAdd = Math.random() < 0.5;
-          let num1;
-
-          if (isOuterAdd) {
-            // 外部加法：确保最终结果在0-100之间
-            num1 = Math.floor(Math.random() * (100 - innerResult + 1)); // 0-(100-innerResult)
-            result = num1 + innerResult;
-
-            if (result >= 0 && result <= 100 && result !== 1) {
-              expression = isInnerAdd
-                ? `${num1} + (${innerNum2} + ${innerNum3}) = `
-                : `${num1} + (${innerNum2} - ${innerNum3}) = `;
-              return expression;
-            }
-          } else {
-            // 外部减法：确保最终结果在0-100之间且不为负数
-            num1 = Math.floor(Math.random() * (100 - innerResult + 1)) + innerResult; // innerResult-100
-            result = num1 - innerResult;
-
-            if (result >= 0 && result <= 100 && result !== 1) {
-              expression = isInnerAdd
-                ? `${num1} - (${innerNum2} + ${innerNum3}) = `
-                : `${num1} - (${innerNum2} - ${innerNum3}) = `;
-              return expression;
-            }
+          if (result >= 0 && result <= 100 && result !== 1) {
+            expression = isInnerAdd
+              ? `${num1} - (${innerNum2} + ${innerNum3}) = `
+              : `${num1} - (${innerNum2} - ${innerNum3}) = `;
+            return expression;
           }
         }
       } while (attempts < maxAttempts);
@@ -826,6 +774,7 @@
 
     // 生成带括号的乘除运算题目（结果0-100）
     // 仅包含括号和乘除法，每一步运算都要符合4条基本规律
+    // 括号不能在前面
     function generateParenthesesMulDiv() {
       // 构建九九乘法表（不含与1相关的题目）
       const multiplicationTable = [];
@@ -845,117 +794,57 @@
       do {
         attempts++;
 
-        // 随机选择括号形式
-        const pattern = Math.floor(Math.random() * 2); // 0-1种模式
+        // 只使用模式2: a op (b op c)
+        // 先生成括号内的运算
+        const isInnerMultiply = Math.random() < 0.5;
+        let innerResult, innerNum2, innerNum3;
 
-        if (pattern === 0) {
-          // 模式1: (a op b) op c
-          // 先生成括号内的运算
-          const isInnerMultiply = Math.random() < 0.5;
-          let innerResult, innerNum1, innerNum2;
+        if (isInnerMultiply) {
+          // 括号内乘法：使用九九乘法表（不含1）
+          innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
+          innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
+          innerResult = innerNum2 * innerNum3;
+        } else {
+          // 括号内除法：确保能整除
+          const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+          innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
+          innerNum2 = quotient * innerNum3;
+          innerResult = quotient;
+        }
 
-          if (isInnerMultiply) {
-            // 括号内乘法：使用九九乘法表（不含1）
-            innerNum1 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerResult = innerNum1 * innerNum2;
-          } else {
-            // 括号内除法：确保能整除
-            const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum1 = quotient * innerNum2;
-            innerResult = quotient;
-          }
+        // 确保括号内结果在合理范围内且不为1
+        if (innerResult > 100 || innerResult < 2 || innerResult === 1) continue;
 
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 2 || innerResult === 1) continue;
+        // 生成括号前的运算
+        const isOuterMultiply = Math.random() < 0.5;
+        let num1;
 
-          // 生成括号外的运算
-          const isOuterMultiply = Math.random() < 0.5;
-          let num3;
+        if (isOuterMultiply) {
+          // 外部乘法：确保最终结果在0-100之间
+          num1 = Math.floor(Math.random() * Math.min(9, Math.floor(100 / innerResult))) + 2; // 2-9
+          result = num1 * innerResult;
 
-          if (isOuterMultiply) {
-            // 外部乘法：确保最终结果在0-100之间
-            num3 = Math.floor(Math.random() * Math.min(9, Math.floor(100 / innerResult))) + 2; // 2-9
-            result = innerResult * num3;
-
-            if (result >= 2 && result <= 100 && result !== 1) {
-              expression = isInnerMultiply
-                ? `(${innerNum1} × ${innerNum2}) × ${num3} = `
-                : `(${innerNum1} ÷ ${innerNum2}) × ${num3} = `;
-              return expression;
-            }
-          } else {
-            // 外部除法：确保能整除
-            const quotient = Math.floor(Math.random() * Math.min(9, Math.floor(innerResult / 2))) + 2; // 2-9
-            num3 = Math.floor(Math.random() * 8) + 2; // 2-9
-            const dividend = quotient * num3;
-
-            // 确保dividend等于innerResult
-            if (dividend === innerResult) {
-              result = quotient;
-
-              if (result >= 2 && result <= 100 && result !== 1) {
-                expression = isInnerMultiply
-                  ? `(${innerNum1} × ${innerNum2}) ÷ ${num3} = `
-                  : `(${innerNum1} ÷ ${innerNum2}) ÷ ${num3} = `;
-                return expression;
-              }
-            }
+          if (result >= 2 && result <= 100 && result !== 1) {
+            expression = isInnerMultiply
+              ? `${num1} × (${innerNum2} × ${innerNum3}) = `
+              : `${num1} × (${innerNum2} ÷ ${innerNum3}) = `;
+            return expression;
           }
         } else {
-          // 模式2: a op (b op c)
-          // 先生成括号内的运算
-          const isInnerMultiply = Math.random() < 0.5;
-          let innerResult, innerNum2, innerNum3;
+          // 外部除法：确保能整除
+          const quotient = Math.floor(Math.random() * Math.min(9, Math.floor(innerResult / 2))) + 2; // 2-9
+          num1 = Math.floor(Math.random() * 8) + 2; // 2-9
+          const dividend = quotient * num1;
 
-          if (isInnerMultiply) {
-            // 括号内乘法：使用九九乘法表（不含1）
-            innerNum2 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerResult = innerNum2 * innerNum3;
-          } else {
-            // 括号内除法：确保能整除
-            const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum3 = Math.floor(Math.random() * 8) + 2; // 2-9
-            innerNum2 = quotient * innerNum3;
-            innerResult = quotient;
-          }
-
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 2 || innerResult === 1) continue;
-
-          // 生成括号前的运算
-          const isOuterMultiply = Math.random() < 0.5;
-          let num1;
-
-          if (isOuterMultiply) {
-            // 外部乘法：确保最终结果在0-100之间
-            num1 = Math.floor(Math.random() * Math.min(9, Math.floor(100 / innerResult))) + 2; // 2-9
-            result = num1 * innerResult;
+          // 确保dividend等于innerResult
+          if (dividend === innerResult) {
+            result = quotient;
 
             if (result >= 2 && result <= 100 && result !== 1) {
               expression = isInnerMultiply
-                ? `${num1} × (${innerNum2} × ${innerNum3}) = `
-                : `${num1} × (${innerNum2} ÷ ${innerNum3}) = `;
+                ? `${num1} ÷ (${innerNum2} × ${innerNum3}) = `
+                : `${num1} ÷ (${innerNum2} ÷ ${innerNum3}) = `;
               return expression;
-            }
-          } else {
-            // 外部除法：确保能整除
-            const quotient = Math.floor(Math.random() * Math.min(9, Math.floor(innerResult / 2))) + 2; // 2-9
-            num1 = Math.floor(Math.random() * 8) + 2; // 2-9
-            const dividend = quotient * num1;
-
-            // 确保dividend等于innerResult
-            if (dividend === innerResult) {
-              result = quotient;
-
-              if (result >= 2 && result <= 100 && result !== 1) {
-                expression = isInnerMultiply
-                  ? `${num1} ÷ (${innerNum2} × ${innerNum3}) = `
-                  : `${num1} ÷ (${innerNum2} ÷ ${innerNum3}) = `;
-                return expression;
-              }
             }
           }
         }
