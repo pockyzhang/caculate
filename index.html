@@ -102,12 +102,34 @@
       z-index: 1;
       border: 1px solid #ddd;
       border-radius: 4px;
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
     }
 
     .dropdown-content.show {
       display: block;
+    }
+
+    .dropdown-controls {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+      background-color: #f8f9fa;
+    }
+
+    .control-btn {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    .control-btn:hover {
+      background-color: #5a6268;
     }
 
     .dropdown-content label {
@@ -212,6 +234,11 @@
         <div class="dropdown" id="typeDropdown">
           <button class="dropdown-button" onclick="toggleDropdown()">选择题目类型...</button>
           <div class="dropdown-content" id="dropdownContent">
+            <div class="dropdown-controls">
+              <button class="control-btn" onclick="selectAllTypes()">全选</button>
+              <button class="control-btn" onclick="deselectAllTypes()">全不选</button>
+              <button class="control-btn" onclick="invertSelection()">反选</button>
+            </div>
             <label><input type="checkbox" id="addition" checked> 加法运算</label>
             <label><input type="checkbox" id="subtraction" checked> 减法运算</label>
             <label><input type="checkbox" id="addSubMix" checked> 加减混合运算</label>
@@ -248,6 +275,30 @@
       document.getElementById("dropdownContent").classList.toggle("show");
     }
 
+    // 全选
+    function selectAllTypes() {
+      const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+    }
+
+    // 全不选
+    function deselectAllTypes() {
+      const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+    }
+
+    // 反选
+    function invertSelection() {
+      const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]');
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = !checkbox.checked;
+      });
+    }
+
     // 点击其他地方关闭下拉菜单
     window.onclick = function (event) {
       if (!event.target.matches('.dropdown-button') && !event.target.closest('.dropdown-content')) {
@@ -267,6 +318,19 @@
       for (let j = 2; j <= 9; j++) {
         if (i * j <= 100) {
           multiplicationTable.push({ a: i, b: j, result: i * j });
+        }
+      }
+    }
+
+    // 构建全局的除法表（基于九九乘法表）
+    const divisionTable = [];
+    for (let i = 2; i <= 9; i++) {
+      for (let j = 2; j <= 9; j++) {
+        const dividend = i * j;
+        if (dividend <= 100) {
+          // 添加两种形式的除法题目
+          divisionTable.push({ dividend: dividend, divisor: i, quotient: j });
+          divisionTable.push({ dividend: dividend, divisor: j, quotient: i });
         }
       }
     }
@@ -408,19 +472,6 @@
 
     // 生成除法题目（九九乘法表，不含1，不出现数字0）
     function generateDivision() {
-      // 构建九九乘法表对应的除法题目（不含与1相关的题目）
-      const divisionTable = [];
-      for (let i = 2; i <= 9; i++) {
-        for (let j = 2; j <= 9; j++) {
-          const dividend = i * j;
-          if (dividend <= 100) {
-            // 添加两种形式的除法题目
-            divisionTable.push({ dividend: dividend, divisor: i, quotient: j });
-            divisionTable.push({ dividend: dividend, divisor: j, quotient: i });
-          }
-        }
-      }
-
       // 随机选择一个题目
       const randomIndex = Math.floor(Math.random() * divisionTable.length);
       const problem = divisionTable[randomIndex];
@@ -597,29 +648,6 @@
       let result = 0;
       let attempts = 0;
       const maxAttempts = 100; // 防止无限循环
-
-      // 构建九九乘法表（不含与1相关的题目）
-      const multiplicationTable = [];
-      for (let i = 2; i <= 9; i++) {
-        for (let j = 2; j <= 9; j++) {
-          const product = i * j;
-          if (product <= 100) {
-            multiplicationTable.push({ a: i, b: j, result: product });
-          }
-        }
-      }
-
-      // 所有乘除法必须来自九九乘法表
-      // 构建九九乘法表（不含与1相关的题目）
-      const multiplicationTable = [];
-      for (let i = 2; i <= 9; i++) {
-        for (let j = 2; j <= 9; j++) {
-          const product = i * j;
-          if (product <= 100) {
-            multiplicationTable.push({ a: i, b: j, result: product });
-          }
-        }
-      }
 
       do {
         attempts++;
@@ -883,164 +911,171 @@
     // 必须是带小括号，小括号外面不能是加减法，小括号内部不能是乘除法
     // 所有乘除法必须来自九九乘法表
     function generateParenthesesOperations() {
-      let expression = '';
-      let result = 0;
-      let attempts = 0;
-      const maxAttempts = 100; // 防止无限循环
+      // 使用迭代方式防止栈溢出
+      const maxTotalAttempts = 1000; // 总的最大尝试次数
+      let totalAttempts = 0;
 
-      do {
-        attempts++;
+      while (totalAttempts < maxTotalAttempts) {
+        totalAttempts++;
+        let expression = '';
+        let result = 0;
+        const maxAttempts = 100; // 每次循环的最大尝试次数
+        let attempts = 0;
 
-        // 随机选择括号形式
-        const pattern = Math.floor(Math.random() * 2); // 0-1种模式
+        do {
+          attempts++;
 
-        if (pattern === 0) {
-          // 模式1: (a op b) op c
-          // 先生成括号内的运算（只能是加减法）
-          const isInnerAdd = Math.random() < 0.5;
-          let innerResult, innerNum1, innerNum2;
+          // 随机选择括号形式
+          const pattern = Math.floor(Math.random() * 2); // 0-1种模式
 
-          if (isInnerAdd) {
-            // 括号内加法
-            innerNum1 = Math.floor(Math.random() * 49) + 2; // 2-50
-            innerNum2 = Math.floor(Math.random() * (100 - innerNum1)) + 1; // 1-(100-innerNum1)
-            innerResult = innerNum1 + innerNum2;
-          } else {
-            // 括号内减法
-            innerNum1 = Math.floor(Math.random() * 49) + 51; // 51-99
-            innerNum2 = Math.floor(Math.random() * (innerNum1 - 2)) + 2; // 2-(innerNum1-2)
-            innerResult = innerNum1 - innerNum2;
-          }
+          if (pattern === 0) {
+            // 模式1: (a op b) op c
+            // 先生成括号内的运算（只能是加减法）
+            const isInnerAdd = Math.random() < 0.5;
+            let innerResult, innerNum1, innerNum2;
 
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 0 || innerResult === 1) continue;
+            if (isInnerAdd) {
+              // 括号内加法
+              innerNum1 = Math.floor(Math.random() * 49) + 2; // 2-50
+              innerNum2 = Math.floor(Math.random() * (100 - innerNum1)) + 1; // 1-(100-innerNum1)
+              innerResult = innerNum1 + innerNum2;
+            } else {
+              // 括号内减法
+              innerNum1 = Math.floor(Math.random() * 49) + 51; // 51-99
+              innerNum2 = Math.floor(Math.random() * (innerNum1 - 2)) + 2; // 2-(innerNum1-2)
+              innerResult = innerNum1 - innerNum2;
+            }
 
-          // 生成括号外的运算（只能是乘除法，且必须来自九九乘法表）
-          const isOuterMultiply = Math.random() < 0.5;
-          let num3;
+            // 确保括号内结果在合理范围内且不为1，并且符合九九乘法表的要求（2-9之间）
+            if (innerResult > 100 || innerResult < 0 || innerResult === 1 || innerResult < 2 || innerResult > 9) continue;
 
-          if (isOuterMultiply) {
-            // 外部乘法：使用九九乘法表
-            // 查找innerResult是否是某个九九乘法表中的结果
-            const validMultiplications = multiplicationTable.filter(item => item.result === innerResult);
+            // 生成括号外的运算（只能是乘除法，且必须来自九九乘法表）
+            const isOuterMultiply = Math.random() < 0.5;
+            let num3;
 
-            if (validMultiplications.length > 0) {
-              // 随机选择一个有效的乘法组合
-              const selectedItem = validMultiplications[Math.floor(Math.random() * validMultiplications.length)];
-              num3 = innerResult === selectedItem.a ? selectedItem.b : selectedItem.a;
+            if (isOuterMultiply) {
+              // 外部乘法：使用九九乘法表
+              // 查找innerResult是否是某个九九乘法表中的结果
+              const validMultiplications = multiplicationTable.filter(item => item.result === innerResult);
 
-              // 确保num3在2-9范围内
-              if (num3 >= 2 && num3 <= 9) {
-                result = innerResult * num3;
+              if (validMultiplications.length > 0) {
+                // 随机选择一个有效的乘法组合
+                const selectedItem = validMultiplications[Math.floor(Math.random() * validMultiplications.length)];
+                num3 = innerResult === selectedItem.a ? selectedItem.b : selectedItem.a;
 
-                if (result >= 2 && result <= 100 && result !== 1) {
-                  expression = isInnerAdd
-                    ? `(${innerNum1} + ${innerNum2}) × ${num3} = `
-                    : `(${innerNum1} - ${innerNum2}) × ${num3} = `;
-                  return expression;
+                // 确保num3在2-9范围内
+                if (num3 >= 2 && num3 <= 9) {
+                  result = innerResult * num3;
+
+                  if (result >= 2 && result <= 100 && result !== 1) {
+                    expression = isInnerAdd
+                      ? `(${innerNum1} + ${innerNum2}) × ${num3} = `
+                      : `(${innerNum1} - ${innerNum2}) × ${num3} = `;
+                    return expression;
+                  }
+                }
+              }
+            } else {
+              // 外部除法：确保能整除且来自九九乘法表
+              // 查找innerResult是否可以作为除数
+              const validDivisions = multiplicationTable.filter(item => item.b === innerResult);
+
+              if (validDivisions.length > 0) {
+                // 随机选择一个有效的除法组合
+                const selectedItem = validDivisions[Math.floor(Math.random() * validDivisions.length)];
+                num3 = selectedItem.a;
+
+                // 确保num3在2-9范围内
+                if (num3 >= 2 && num3 <= 9) {
+                  result = innerResult / num3;
+
+                  if (result >= 2 && result <= 100 && result !== 1) {
+                    expression = isInnerAdd
+                      ? `(${innerNum1} + ${innerNum2}) ÷ ${num3} = `
+                      : `(${innerNum1} - ${innerNum2}) ÷ ${num3} = `;
+                    return expression;
+                  }
                 }
               }
             }
           } else {
-            // 外部除法：确保能整除且来自九九乘法表
-            // 查找innerResult是否是某个九九乘法表中的结果
-            const validDivisions = multiplicationTable.filter(item => item.result === innerResult);
+            // 模式2: a op (b op c)
+            // 先生成括号内的运算（只能是加减法）
+            const isInnerAdd = Math.random() < 0.5;
+            let innerResult, innerNum2, innerNum3;
 
-            if (validDivisions.length > 0) {
-              // 随机选择一个有效的除法组合
-              const selectedItem = validDivisions[Math.floor(Math.random() * validDivisions.length)];
-              num3 = innerResult === selectedItem.a ? selectedItem.b : selectedItem.a;
+            if (isInnerAdd) {
+              // 括号内加法
+              innerNum2 = Math.floor(Math.random() * 49) + 2; // 2-50
+              innerNum3 = Math.floor(Math.random() * (100 - innerNum2)) + 1; // 1-(100-innerNum2)
+              innerResult = innerNum2 + innerNum3;
+            } else {
+              // 括号内减法
+              innerNum2 = Math.floor(Math.random() * 49) + 51; // 51-99
+              innerNum3 = Math.floor(Math.random() * (innerNum2 - 2)) + 2; // 2-(innerNum2-2)
+              innerResult = innerNum2 - innerNum3;
+            }
 
-              // 确保num3在2-9范围内
-              if (num3 >= 2 && num3 <= 9) {
-                result = innerResult / num3;
+            // 确保括号内结果在合理范围内且不为1，并且符合九九乘法表的要求（2-9之间）
+            if (innerResult > 100 || innerResult < 0 || innerResult === 1 || innerResult < 2 || innerResult > 9) continue;
 
-                if (result >= 2 && result <= 100 && result !== 1) {
-                  expression = isInnerAdd
-                    ? `(${innerNum1} + ${innerNum2}) ÷ ${num3} = `
-                    : `(${innerNum1} - ${innerNum2}) ÷ ${num3} = `;
-                  return expression;
+            // 生成括号前的运算（只能是乘除法，且必须来自九九乘法表）
+            const isOuterMultiply = Math.random() < 0.5;
+            let num1;
+
+            if (isOuterMultiply) {
+              // 外部乘法：使用九九乘法表
+              // 查找innerResult是否是某个九九乘法表中的结果
+              const validMultiplications = multiplicationTable.filter(item => item.result === innerResult);
+
+              if (validMultiplications.length > 0) {
+                // 随机选择一个有效的乘法组合
+                const selectedItem = validMultiplications[Math.floor(Math.random() * validMultiplications.length)];
+                num1 = innerResult === selectedItem.a ? selectedItem.b : selectedItem.a;
+
+                // 确保num1在2-9范围内
+                if (num1 >= 2 && num1 <= 9) {
+                  result = num1 * innerResult;
+
+                  if (result >= 2 && result <= 100 && result !== 1) {
+                    expression = isInnerAdd
+                      ? `${num1} × (${innerNum2} + ${innerNum3}) = `
+                      : `${num1} × (${innerNum2} - ${innerNum3}) = `;
+                    return expression;
+                  }
+                }
+              }
+            } else {
+              // 外部除法：确保能整除且来自九九乘法表
+              // 查找innerResult是否可以作为除数，num1作为被除数
+              const validDivisions = multiplicationTable.filter(item => item.b === innerResult);
+
+              if (validDivisions.length > 0) {
+                // 随机选择一个有效的除法组合
+                const selectedItem = validDivisions[Math.floor(Math.random() * validDivisions.length)];
+                // 使用被除数作为num1
+                num1 = selectedItem.a;
+                const divisor = selectedItem.b;
+
+                // 确保除数等于innerResult
+                if (divisor === innerResult) {
+                  result = num1 / divisor;
+
+                  if (result >= 2 && result <= 100 && result !== 1) {
+                    expression = isInnerAdd
+                      ? `${num1} ÷ (${innerNum2} + ${innerNum3}) = `
+                      : `${num1} ÷ (${innerNum2} - ${innerNum3}) = `;
+                    return expression;
+                  }
                 }
               }
             }
           }
-        } else {
-          // 模式2: a op (b op c)
-          // 先生成括号内的运算（只能是加减法）
-          const isInnerAdd = Math.random() < 0.5;
-          let innerResult, innerNum2, innerNum3;
+        } while (attempts < maxAttempts);
+      }
 
-          if (isInnerAdd) {
-            // 括号内加法
-            innerNum2 = Math.floor(Math.random() * 49) + 2; // 2-50
-            innerNum3 = Math.floor(Math.random() * (100 - innerNum2)) + 1; // 1-(100-innerNum2)
-            innerResult = innerNum2 + innerNum3;
-          } else {
-            // 括号内减法
-            innerNum2 = Math.floor(Math.random() * 49) + 51; // 51-99
-            innerNum3 = Math.floor(Math.random() * (innerNum2 - 2)) + 2; // 2-(innerNum2-2)
-            innerResult = innerNum2 - innerNum3;
-          }
-
-          // 确保括号内结果在合理范围内且不为1
-          if (innerResult > 100 || innerResult < 0 || innerResult === 1) continue;
-
-          // 生成括号前的运算（只能是乘除法，且必须来自九九乘法表）
-          const isOuterMultiply = Math.random() < 0.5;
-          let num1;
-
-          if (isOuterMultiply) {
-            // 外部乘法：使用九九乘法表
-            // 查找innerResult是否是某个九九乘法表中的结果
-            const validMultiplications = multiplicationTable.filter(item => item.result === innerResult);
-
-            if (validMultiplications.length > 0) {
-              // 随机选择一个有效的乘法组合
-              const selectedItem = validMultiplications[Math.floor(Math.random() * validMultiplications.length)];
-              num1 = innerResult === selectedItem.a ? selectedItem.b : selectedItem.a;
-
-              // 确保num1在2-9范围内
-              if (num1 >= 2 && num1 <= 9) {
-                result = num1 * innerResult;
-
-                if (result >= 2 && result <= 100 && result !== 1) {
-                  expression = isInnerAdd
-                    ? `${num1} × (${innerNum2} + ${innerNum3}) = `
-                    : `${num1} × (${innerNum2} - ${innerNum3}) = `;
-                  return expression;
-                }
-              }
-            }
-          } else {
-            // 外部除法：确保能整除且来自九九乘法表
-            // 查找innerResult是否是某个九九乘法表中的结果
-            const validDivisions = multiplicationTable.filter(item => item.a === innerResult || item.b === innerResult);
-
-            if (validDivisions.length > 0) {
-              // 随机选择一个有效的除法组合
-              const selectedItem = validDivisions[Math.floor(Math.random() * validDivisions.length)];
-              // 确保我们使用的是被除数作为num1
-              num1 = selectedItem.a;
-              const divisor = selectedItem.b;
-
-              // 确保除数等于innerResult
-              if (divisor === innerResult) {
-                result = num1 / divisor;
-
-                if (result >= 2 && result <= 100 && result !== 1) {
-                  expression = isInnerAdd
-                    ? `${num1} ÷ (${innerNum2} + ${innerNum3}) = `
-                    : `${num1} ÷ (${innerNum2} - ${innerNum3}) = `;
-                  return expression;
-                }
-              }
-            }
-          }
-        }
-      } while (attempts < maxAttempts);
-
-      // 如果超过最大尝试次数仍未找到合适的组合，则递归调用
-      return generateParenthesesOperations(); // 递归重新生成
+      // 如果超过最大尝试次数仍未找到合适的组合，返回空字符串
+      return "";
     }
 
     function exportToPDF() {
