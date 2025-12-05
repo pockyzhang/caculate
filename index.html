@@ -1088,7 +1088,7 @@
       // 获取选中的题目类型
       const checkboxes = document.querySelectorAll('#dropdownContent input[type="checkbox"]:checked');
       const selectedTypes = Array.from(checkboxes).map(cb =>
-        document.querySelector(`label[for="${cb.id}"]`).textContent
+        cb.parentElement.textContent
       ).join("、");
 
       // 配置PDF选项
